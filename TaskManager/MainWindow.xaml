@@ -1,0 +1,84 @@
+﻿<Window x:Class="TaskManager.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TaskManager"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="500" Width="800">
+    <Window.Resources>
+        <CollectionViewSource x:Key="MyProcesses"/>
+    </Window.Resources>
+
+    <DockPanel DataContext="{Binding Source={StaticResource MyProcesses}}">
+
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Height="50" Margin="0,0,0,20" MouseLeftButtonUp="StackPanel_MouseLeftButtonUp">
+            <StackPanel>
+                <Label FontWeight="Bold">Piority</Label>
+                <StackPanel Orientation="Horizontal">
+                    <CheckBox Name="checkBox_idle" Margin="0,0,10,0"  IsChecked="True">Idle</CheckBox>
+                    <CheckBox Name="checkBox_belowNormal" Margin="0,0,10,0" IsChecked="True">BelowNormal</CheckBox>
+                    <CheckBox Name="checkBox_normal" Margin="0,0,10,0" IsChecked="True">Normal</CheckBox>
+                    <CheckBox Name="checkBox_aboveNormal" Margin="0,0,10,0" IsChecked="True">AboveNormal</CheckBox>
+                    <CheckBox Name="checkBox_high" Margin="0,0,10,0" IsChecked="True">High</CheckBox>
+                    <CheckBox Name="checkBox_realTime" Margin="0,0,10,0" IsChecked="True">RealTime</CheckBox>
+                </StackPanel>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="70,0,0,0">
+                <Button Name="ManagedProcessesButton" Margin="0,0,10,0" Width="120" Click="ManagedProcessesButton_Click">Managed Processes</Button>
+            </StackPanel>
+        </StackPanel>
+        
+        <StackPanel Height="400" Width="600"  VerticalAlignment="Top" DockPanel.Dock="Left">
+            <Label>Processes</Label>
+            <ListView Name="MyListView" Height="350" ItemsSource="{Binding}"
+                     IsSynchronizedWithCurrentItem="true"
+                     ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     GridViewColumnHeader.Click="MyProcessesColumnClick">
+                <ListView.Resources>
+                    <ContextMenu x:Key="ProcessesContextMenu">
+                        <MenuItem Header="Change priority" DataContext="{Binding}">
+                            <MenuItem Header="RealTime" Click="ChangePriority_Click"/>
+                            <MenuItem Header="High" Click="ChangePriority_Click"/>
+                            <MenuItem Header="AboveNormal" Click="ChangePriority_Click"/>
+                            <MenuItem Header="Normal" Click="ChangePriority_Click"/>
+                            <MenuItem Header="BelowNormal" Click="ChangePriority_Click"/>
+                            <MenuItem Header="Idle" Click="ChangePriority_Click"/>
+                        </MenuItem>
+                        <MenuItem Header="Kill" DataContext="{Binding}" Click="KillProcess_Click"/>
+                        <MenuItem Header="Add to managed" DataContext="{Binding}" Click="AddToManaged_Click"/>
+                    </ContextMenu>
+
+                    <Style TargetType="{x:Type ListViewItem}">
+                        <Setter Property="ContextMenu" Value="{StaticResource ProcessesContextMenu}"/>
+                    </Style>
+                </ListView.Resources>
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=ProcessName}" Header="Name"/>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=Id}" Header="ID"/>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=BasePriority, Converter={StaticResource PriorityConverter}}" Header="Priority"/>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=WorkingSet64, Converter={StaticResource BytesConverter}}" Header="Physical memory"/>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=PagedMemorySize64, Converter={StaticResource BytesConverter}}" Header="Paged memory"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Height="400" Width="150" VerticalAlignment="Top" DockPanel.Dock="Left" HorizontalAlignment="Left">
+            <Label Content="{Binding Path=ProcessName}"/>
+            <StackPanel Height="170" Width="150">
+                <Label>Threads</Label>
+                <ListBox Height="150" ItemsSource="{Binding Path=Threads}" DisplayMemberPath="Id"
+                         IsSynchronizedWithCurrentItem="true"
+                         ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+            </StackPanel>
+            <StackPanel Height="200" Width="150">
+                <Label>Modules</Label>
+                <ListBox Height="150" ItemsSource="{Binding Path=Modules}" DisplayMemberPath="ModuleName"
+                         IsSynchronizedWithCurrentItem="true"
+                         ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+            </StackPanel>
+        </StackPanel>
+    </DockPanel>
+</Window>

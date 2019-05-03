@@ -1,0 +1,91 @@
+﻿<Window x:Class="TaskManager.ManagedProcessesWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TaskManager"
+        mc:Ignorable="d"
+        Title="ManagedProcessesWindow" Height="450" Width="800">
+    <Window.Resources>
+        <CollectionViewSource x:Key="MyProcesses"/>
+        <CompositeCollection x:Key="ResumeFlags"/>
+        <local:IdToResumeFlagConverter x:Key="ResumeFlagConverter"/>
+        <local:IdToLogFlagConverter x:Key="LogFlagConverter"/>
+    </Window.Resources>
+
+    <DockPanel DataContext="{Binding Source={StaticResource MyProcesses}}">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"  Margin="0,0,0,20" MouseLeftButtonUp="StackPanel_MouseLeftButtonUp">
+            <StackPanel>
+                <Label FontWeight="Bold">Options descriptions</Label>
+                <Label>"Resume" option when checked process will try to resume after exiting.</Label>
+                <Label>"Log" option when checked process will log in to file after exiting.</Label>
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel Height="400" Width="600"  VerticalAlignment="Top" DockPanel.Dock="Left">
+            <Label>My managed processes</Label>
+            <ListView Name="MyListView" Height="350" ItemsSource="{Binding}"
+                     IsSynchronizedWithCurrentItem="true"
+                     ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     GridViewColumnHeader.Click="MyProcessesColumnClick">
+                <ListView.Resources>
+                    <ContextMenu x:Key="ProcessesContextMenu">
+                        <MenuItem Header="Change priority" DataContext="{Binding}">
+                            <MenuItem Header="RealTime" Click="ChangePriority_Click"/>
+                            <MenuItem Header="High" Click="ChangePriority_Click"/>
+                            <MenuItem Header="AboveNormal" Click="ChangePriority_Click"/>
+                            <MenuItem Header="Normal" Click="ChangePriority_Click"/>
+                            <MenuItem Header="BelowNormal" Click="ChangePriority_Click"/>
+                            <MenuItem Header="Idle" Click="ChangePriority_Click"/>
+                        </MenuItem>
+                        <MenuItem Header="Kill" DataContext="{Binding}" Click="KillProcess_Click"/>
+                        <MenuItem Header="Remove" DataContext="{Binding}" Click="RemoveProcess_Click"/>
+                    </ContextMenu>
+
+                    <Style TargetType="{x:Type ListViewItem}">
+                        <Setter Property="ContextMenu" Value="{StaticResource ProcessesContextMenu}"/>
+                    </Style>
+                </ListView.Resources>
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=ProcessName}" Header="Name"/>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=Id}" Header="ID"/>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=BasePriority, Converter={StaticResource PriorityConverter}}" Header="Priority"/>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=WorkingSet64, Converter={StaticResource BytesConverter}}" Header="Physical memory"/>
+                        <GridViewColumn DisplayMemberBinding="{Binding Path=PagedMemorySize64, Converter={StaticResource BytesConverter}}" Header="Paged memory"/>
+                        <GridViewColumn Header="Resume">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox Checked="ResumeCheckBox_Click" Unchecked="ResumeCheckBox_Click" IsChecked="{Binding Path=Id, Mode=OneWay, Converter={StaticResource ResumeFlagConverter}}"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Log">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <CheckBox  Checked="LogCheckBox_Click" Unchecked="LogCheckBox_Click" IsChecked="{Binding Path=Id, Mode=OneWay, Converter={StaticResource LogFlagConverter}}"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" Height="400" Width="150" VerticalAlignment="Top" DockPanel.Dock="Left" HorizontalAlignment="Left">
+            <Label Content="{Binding Path=ProcessName}"/>
+            <StackPanel Height="170" Width="150">
+                <Label>Threads</Label>
+                <ListBox Height="150" ItemsSource="{Binding Path=Threads}" DisplayMemberPath="Id"
+                         IsSynchronizedWithCurrentItem="true"
+                         ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+            </StackPanel>
+            <StackPanel Height="200" Width="150">
+                <Label>Modules</Label>
+                <ListBox Height="150" ItemsSource="{Binding Path=Modules}" DisplayMemberPath="ModuleName"
+                         IsSynchronizedWithCurrentItem="true"
+                         ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+            </StackPanel>
+        </StackPanel>
+    </DockPanel>
+</Window>
